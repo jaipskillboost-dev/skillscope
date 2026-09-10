@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Trainer library{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>Trainer library</h1>
+      <p>
+        Shared material for {{ user.institution.name }}, not tied to any one course.
+        Every trainer here can use it.
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Library</h3>
+          <form method="get" class="d-flex gap-2">
+            <select class="form-select form-select-sm" name="subject"
+                    onchange="this.form.submit()" aria-label="Filter by subject">
+              <option value="">All subjects</option>
+              {% for s in subjects %}
+                <option value="{{ s.id }}" {% if subject_id == s.id|stringformat:"s" %}selected{% endif %}>
+                  {{ s.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+        <div class="ss-card-body">
+          {% for r in resources %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <span class="ss-pill ss-pill-neutral">{{ r.get_resource_type_display }}</span>
+              <div class="flex-grow-1">
+                <div class="ss-ink" style="font-weight:600;font-size:.92rem">{{ r.title }}</div>
+                <div class="text-muted" style="font-size:.8rem">
+                  {{ r.subject.name }} &middot; added by {{ r.uploaded_by.full_name|default:"a colleague" }}
+                </div>
+              </div>
+              {% if r.file %}
+                <a class="btn btn-sm btn-soft" href="{{ r.file.url }}" target="_blank">Open</a>
+              {% elif r.link_url %}
+                <a class="btn btn-sm btn-soft" href="{{ r.link_url }}" target="_blank"
+                   rel="noopener noreferrer">Open</a>
+              {% endif %}
+              <form method="post" action="{% url 'trainer_delete_resource' r.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="upload" %}</span>
+          <h4>The library is empty</h4>
+              <p>Add a recorded lecture or a deck that is useful beyond one course.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Add to the library</h3></div>
+        <div class="ss-card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label" for="subject_id">Subject</label>
+              <select class="form-select" id="subject_id" name="subject_id" required>
+                {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+              </select>
+            </div>
+            {% include "partials/form.html" %}
+            <button class="btn btn-primary w-100" type="submit" data-busy-label="Uploading...">Add item</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

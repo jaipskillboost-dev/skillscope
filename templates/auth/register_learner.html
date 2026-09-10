@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Create a learner account{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      <h1 class="h3 mb-1">Create your account</h1>
+      <p class="text-muted mb-4">Free, and you can start learning immediately.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "partials/form.html" %}
+        <button class="btn btn-primary w-100" type="submit" data-busy-label="Creating...">Create account</button>
+      </form>
+
+      <p class="text-center text-muted mt-4 mb-0" style="font-size:.9rem">
+        Already registered? <a href="{% url 'login' %}">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

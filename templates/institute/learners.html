@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Learners{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Learners</h1>
+      <p>Everyone enrolled on one of your courses.</p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ total }}</div>
+        <div class="ss-stat-label">Enrolments</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-success"><div class="ss-stat-value">{{ completed }}</div>
+        <div class="ss-stat-label">Completed</div></div>
+    </div>
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body p-0">
+      <div class="ss-table-wrap">
+        <table class="ss-table">
+          <thead>
+            <tr><th>Learner</th><th>Course</th><th>Progress</th><th>Status</th><th>Enrolled</th></tr>
+          </thead>
+          <tbody>
+            {% for e in enrollments %}
+              <tr>
+                <td>
+                  <strong class="ss-ink">{{ e.learner.full_name }}</strong>
+                  <div class="text-muted" style="font-size:.8rem">{{ e.learner.email }}</div>
+                </td>
+                <td>{{ e.course.title }}</td>
+                <td style="min-width:120px">
+                  <div class="ss-progress">
+                    <div class="ss-progress-bar {% if e.progress_percent >= 100 %}is-complete{% endif %}"
+                         style="width: {{ e.progress_percent }}%"></div>
+                  </div>
+                  <span class="num text-muted" style="font-size:.78rem">{{ e.progress_percent }}%</span>
+                </td>
+                <td>
+                  <span class="ss-pill {% if e.status == 'COMPLETED' %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                    {{ e.get_status_display }}
+                  </span>
+                </td>
+                <td class="num">{{ e.enrolled_at|date:"j M Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">
+                <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>Nobody has enrolled yet</h4>
+                  <p>Publish a course and it will appear in the public catalogue.</p></div>
+              </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

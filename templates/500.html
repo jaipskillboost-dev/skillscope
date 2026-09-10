@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-error">
+      <div class="ss-error-code">500</div>
+      <h1>Something went wrong at our end</h1>
+      <p>
+        This one is our fault, not yours. Nothing you were doing has been lost --
+        try again in a moment.
+      </p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
+        <a class="btn btn-primary" href="/">Go to the home page</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

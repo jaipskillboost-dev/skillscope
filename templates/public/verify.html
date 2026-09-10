@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Certificate {{ code }}{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      {% if certificate %}
+        <div class="text-center mb-4">
+          <span class="ss-pill ss-pill-verified mb-3">Genuine certificate</span>
+          <h1 class="h4 mb-1">{{ certificate.enrollment.learner.full_name }}</h1>
+          <p class="text-muted mb-0">completed this course successfully</p>
+        </div>
+
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Course</span>
+          <strong class="ss-ink text-end">{{ certificate.enrollment.course.title }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Subject</span>
+          <strong class="ss-ink text-end">{{ certificate.enrollment.course.subject.name }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Issued by</span>
+          <strong class="ss-ink text-end">{{ certificate.enrollment.course.institution.name }}</strong>
+        </div>
+        {% if certificate.enrollment.course.trainer %}
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Trainer</span>
+          <strong class="ss-ink text-end">{{ certificate.enrollment.course.trainer.full_name }}</strong>
+        </div>
+        {% endif %}
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Issued on</span>
+          <strong class="ss-ink text-end">{{ certificate.issued_date|date:"j F Y" }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2">
+          <span class="text-muted">Serial number</span>
+          <strong class="ss-ink text-end ss-cert-serial">{{ certificate.serial_no }}</strong>
+        </div>
+
+      {% else %}
+        <div class="text-center">
+          <span class="ss-pill ss-pill-rejected mb-3">Not found</span>
+          <h1 class="h4 mb-2">No certificate has this code</h1>
+          <p class="text-muted mb-4">
+            Nothing on {{ SITE_NAME }} was issued with the code
+            <strong class="ss-cert-serial">{{ code }}</strong>.
+            Check for a typing mistake, or treat the certificate as unverified.
+          </p>
+          <a class="btn btn-soft" href="{% url 'verify_form' %}">Try another code</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

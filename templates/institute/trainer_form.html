@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Add a trainer{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      <h1 class="h4 mb-1">Add a trainer</h1>
+      <p class="text-muted mb-4">
+        The account is created immediately and belongs to
+        <strong class="ss-ink">{{ user.institution.name }}</strong>.
+        Pass the sign-in details on to them.
+      </p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "partials/form.html" %}
+        <button class="btn btn-primary w-100" type="submit" data-busy-label="Creating...">Create trainer account</button>
+      </form>
+
+      <p class="text-center mt-3 mb-0">
+        <a href="{% url 'institute_trainers' %}" style="font-size:.9rem">Cancel</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

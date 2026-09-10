@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Verify a certificate{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      <h1 class="h3 mb-1">Verify a certificate</h1>
+      <p class="text-muted mb-4">
+        Scan the QR code on the certificate, or type the verification code below.
+        No account needed.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label" for="code">Verification code</label>
+          <input class="form-control" id="code" name="code" required
+                 placeholder="e.g. K7QJ3MRTZP" style="text-transform:uppercase">
+        </div>
+        <button class="btn btn-primary w-100" type="submit">Check this certificate</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Trainers for {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>{{ subject.name }}</h1>
+      <p>Every trainer on the platform, ranked for this subject.</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'platform_competency' %}">Back to competency</a>
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body">
+      {% for row in ranked %}
+        <div class="d-flex justify-content-between align-items-center py-3 {% if not forloop.last %}border-bottom{% endif %}">
+          <div>
+            <span class="ss-ink" style="font-weight:600">
+              {{ forloop.counter }}. {{ row.trainer.full_name }}
+            </span>
+            <div class="text-muted" style="font-size:.82rem">
+              {{ row.trainer.institution.name|default:"No institution" }} &middot;
+              {{ row.skill.detail }} &middot; {{ row.experience.detail }} &middot; {{ row.rating.detail }}
+            </div>
+          </div>
+          <span class="ss-pill {% if row.qualified %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+            {{ row.total }}%
+          </span>
+        </div>
+      {% empty %}
+        <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="users" %}</span>
+          <h4>No trainers to rank</h4></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

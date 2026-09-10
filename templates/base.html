@@ -1,0 +1,54 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ SITE_TAGLINE }}{% endblock %}">
+  <meta name="theme-color" content="#4f46e5">
+
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+
+  {# Everything below is served from this project, so the site looks right #}
+  {# with no internet connection. Nothing is loaded from a CDN.            #}
+  <link rel="stylesheet" href="{% static 'fonts/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/skillscope.css' %}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body data-max-upload-mb="{{ MAX_UPLOAD_MB }}">
+
+{% include "partials/navbar.html" %}
+
+<main>
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+          {% if message.tags == 'success' %}
+            {% include "partials/icon.html" with icon="check" %}
+          {% elif message.tags == 'danger' %}
+            {% include "partials/icon.html" with icon="alert" %}
+          {% elif message.tags == 'warning' %}
+            {% include "partials/icon.html" with icon="alert" %}
+          {% else %}
+            {% include "partials/icon.html" with icon="info" %}
+          {% endif %}
+          <span>{{ message }}</span>
+          <button type="button" class="ss-alert-close" data-dismiss-alert
+                  aria-label="Dismiss this message">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+{% include "partials/footer.html" %}
+
+<script src="{% static 'vendor/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/skillscope.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

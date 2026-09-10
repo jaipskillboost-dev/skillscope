@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load skillscope_extras %}
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <span class="ss-pill ss-pill-primary mb-2">{{ course.subject.name }}</span>
+      <h1>{{ course.title }}</h1>
+      <p>
+        {{ course.institution.name }}
+        {% if course.trainer %}&middot; taught by {{ course.trainer.full_name }}{% endif %}
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <div class="ss-ring {% if enrollment.progress_percent >= 100 %}is-complete{% endif %}"
+           style="--value: {{ enrollment.progress_percent }}"
+           role="img" aria-label="{{ enrollment.progress_percent }} per cent complete">
+        <span>{{ enrollment.progress_percent }}%</span>
+      </div>
+      <div class="ss-stat-label">complete</div>
+    </div>
+  </div>
+
+  <div class="ss-progress mb-4">
+    <div class="ss-progress-bar {% if enrollment.progress_percent >= 100 %}is-complete{% endif %}"
+         style="width: {{ enrollment.progress_percent }}%"></div>
+  </div>
+
+  {% if certificate %}
+    <div class="alert alert-success d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <span>You finished this course. Your certificate is ready.</span>
+      <a class="btn btn-sm btn-success" href="{% url 'certificate_view' certificate.id %}">
+        View certificate
+      </a>
+    </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Course material</h3>
+          <span class="ss-label">{{ done_ids|length }} of {{ resources|length }} done</span>
+        </div>
+        <div class="ss-card-body">
+          {% for r in resources %}
+            <div class="ss-material">
+              <span class="ss-material-icon {% if r.id in done_ids %}is-done{% endif %}">
+                {% if r.id in done_ids %}
+                  {% include "partials/icon.html" with icon="check" %}
+                {% else %}
+                  {% include "partials/icon.html" with icon=r.resource_type|material_icon %}
+                {% endif %}
+              </span>
+              <div class="ss-material-body">
+                <div class="ss-material-title">{{ r.title }}</div>
+                <div class="ss-material-sub">
+                  {{ r.get_resource_type_display }}{% if r.description %} &middot; {{ r.description }}{% endif %}
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2 flex-none">
+                {% if r.file %}
+                  <a class="btn btn-sm btn-soft" href="{{ r.file.url }}" target="_blank"
+                     rel="noopener">Open</a>
+                {% elif r.link_url %}
+                  <a class="btn btn-sm btn-soft" href="{{ r.link_url }}" target="_blank"
+                     rel="noopener noreferrer">Open</a>
+                {% endif %}
+                {% if r.id in done_ids %}
+                  <span class="ss-pill ss-pill-verified">Done</span>
+                {% else %}
+                  <form method="post" action="{% url 'mark_resource_done' enrollment.id r.id %}"
+                        class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-primary" type="submit"
+                            data-busy-label="Saving...">Mark done</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            {% include "partials/empty.html" with icon="upload" title="No material yet" body="The trainer has not uploaded anything for this course." %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="ss-card mb-3">
+        <div class="ss-card-head"><h3>Assessments</h3></div>
+        <div class="ss-card-body">
+          {% for a in assessments %}
+            <div class="{% if not forloop.last %}pb-3 mb-3 border-bottom{% endif %}">
+              <div class="ss-ink" style="font-weight:600;font-size:.92rem">{{ a.title }}</div>
+              <div class="text-muted" style="font-size:.82rem">
+                {{ a.questions.count }} questions &middot; {{ a.duration_minutes }} min
+                &middot; pass {{ a.pass_percent }}%
+              </div>
+
+              {% if a.id in attempts %}
+                {% with done=attempts|lookup:a.id %}
+                <a class="btn btn-sm btn-soft mt-2 w-100"
+                   href="{% url 'attempt_result' done.id %}">
+                  {% if done.passed %}Passed{% else %}Not passed{% endif %}
+                  &mdash; {{ done.percentage|floatformat:0 }}%
+                </a>
+                {% endwith %}
+              {% elif a.is_open %}
+                <div class="text-muted mt-1" style="font-size:.8rem">
+                  Closes {{ a.deadline|date:"j M Y, H:i" }}
+                </div>
+                <a class="btn btn-sm btn-primary mt-2 w-100"
+                   href="{% url 'assessment_take' a.id %}">Start assessment</a>
+              {% else %}
+                <span class="ss-pill ss-pill-rejected mt-2">Closed {{ a.deadline|date:"j M" }}</span>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">No assessment on this course.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="ss-card">
+        <div class="ss-card-body">
+          {% if has_feedback %}
+            <p class="text-muted mb-0" style="font-size:.9rem">
+              Thanks for reviewing this course.
+            </p>
+          {% else %}
+            <p class="ss-label mb-2">Your opinion</p>
+            <p class="text-muted mb-3" style="font-size:.87rem">
+              Your rating of the trainer feeds their competency score.
+            </p>
+            <a class="btn btn-soft btn-sm w-100" href="{% url 'give_feedback' enrollment.id %}">
+              Leave feedback
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

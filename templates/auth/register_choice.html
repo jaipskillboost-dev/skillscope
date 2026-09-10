@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Join {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h1 class="h2 mb-2">Join {{ SITE_NAME }}</h1>
+      <p class="text-muted">Choose what brings you here.</p>
+    </div>
+
+    <div class="row g-3 justify-content-center">
+      <div class="col-md-5">
+        <a class="ss-card h-100" href="{% url 'register_learner' %}">
+          <div class="ss-card-body">
+            <span class="ss-pill ss-pill-primary mb-2">Learner</span>
+            <h3 class="h5 mb-2">I want to learn</h3>
+            <p class="text-muted mb-3" style="font-size:.9rem">
+              Enrol on courses from verified institutions, work through the material,
+              take assessments and earn certificates.
+            </p>
+            <span class="ss-label">Start straight away &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-5">
+        <a class="ss-card h-100" href="{% url 'register_institution' %}">
+          <div class="ss-card-body">
+            <span class="ss-pill ss-pill-pending mb-2">Institution</span>
+            <h3 class="h5 mb-2">We want to teach</h3>
+            <p class="text-muted mb-3" style="font-size:.9rem">
+              Register your institution, add your trainers, and publish courses.
+              Applications are reviewed before your courses go live.
+            </p>
+            <span class="ss-label">Apply for verification &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <p class="text-center text-muted mt-4 mb-0" style="font-size:.9rem">
+      Trainers do not sign up here &mdash; your institution creates your account.
+      <br>Already have one? <a href="{% url 'login' %}">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

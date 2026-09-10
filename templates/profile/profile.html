@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}My profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>My profile</h1>
+      <p>
+        {% if user.is_trainer %}
+          Your skills and experience decide which subjects you are recommended for.
+        {% else %}
+          Keep your details up to date.
+        {% endif %}
+      </p>
+    </div>
+    <span class="ss-pill ss-pill-primary">{{ user.get_role_display }}</span>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Details</h3></div>
+        <div class="ss-card-body">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% include "partials/form.html" %}
+            <button class="btn btn-primary" type="submit">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+
+      {% if user.is_trainer %}
+      <div class="ss-card mb-3">
+        <div class="ss-card-head">
+          <h3>Skills</h3>
+          <span class="ss-label">40% of your competency score</span>
+        </div>
+        <div class="ss-card-body">
+          {% for skill in skills %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div>
+                <strong class="ss-ink">{{ skill.skill_name }}</strong>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ skill.subject.name }} &middot; {{ skill.get_proficiency_display }}
+                  &middot; {{ skill.years_experience }} yrs
+                </div>
+              </div>
+              <form method="post" action="{% url 'delete_profile_item' 'skill' skill.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-3" style="font-size:.9rem">
+              No skills listed yet. Without these you will not be recommended for any subject.
+            </p>
+          {% endfor %}
+
+          <form method="post" action="{% url 'add_skill' %}" class="mt-3">
+            {% csrf_token %}
+            <div class="row">
+              {% for field in skill_form %}
+                <div class="col-md-6">{% include "partials/field.html" %}</div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-soft btn-sm" type="submit">Add skill</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="ss-card mb-3">
+        <div class="ss-card-head">
+          <h3>Work experience</h3>
+          <span class="ss-label">30% of your competency score</span>
+        </div>
+        <div class="ss-card-body">
+          {% for exp in experiences %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div>
+                <strong class="ss-ink">{{ exp.designation }}</strong>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ exp.organisation }} &middot; {{ exp.subject.name }} &middot;
+                  {{ exp.from_year }}&ndash;{% if exp.currently_working %}now{% else %}{{ exp.to_year }}{% endif %}
+                  ({{ exp.years }} yrs)
+                </div>
+              </div>
+              <form method="post" action="{% url 'delete_profile_item' 'experience' exp.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-3" style="font-size:.9rem">No experience added yet.</p>
+          {% endfor %}
+
+          <form method="post" action="{% url 'add_experience' %}" class="mt-3">
+            {% csrf_token %}
+            <div class="row">
+              {% for field in experience_form %}
+                <div class="col-md-6">{% include "partials/field.html" %}</div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-soft btn-sm" type="submit">Add experience</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="ss-card mb-3">
+        <div class="ss-card-head"><h3>Qualifications</h3></div>
+        <div class="ss-card-body">
+          {% for q in qualifications %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div>
+                <strong class="ss-ink">{{ q.degree }}</strong>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ q.institution_name }} &middot; {{ q.year_of_passing }}
+                  {% if q.percentage %}&middot; {{ q.percentage }}%{% endif %}
+                </div>
+              </div>
+              <form method="post" action="{% url 'delete_profile_item' 'qualification' q.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-3" style="font-size:.9rem">No qualifications added yet.</p>
+          {% endfor %}
+
+          <form method="post" action="{% url 'add_qualification' %}" class="mt-3">
+            {% csrf_token %}
+            <div class="row">
+              {% for field in qualification_form %}
+                <div class="col-md-6">{% include "partials/field.html" %}</div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-soft btn-sm" type="submit">Add qualification</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Certificates</h3></div>
+        <div class="ss-card-body">
+          {% for c in certificates %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div>
+                <strong class="ss-ink">{{ c.title }}</strong>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ c.issuer }} &middot; {{ c.issued_date|date:"M Y" }}
+                  {% if c.file %}&middot; <a href="{{ c.file.url }}" target="_blank">View</a>{% endif %}
+                </div>
+              </div>
+              <form method="post" action="{% url 'delete_profile_item' 'certificate' c.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-3" style="font-size:.9rem">Nothing uploaded yet.</p>
+          {% endfor %}
+
+          <form method="post" action="{% url 'add_user_certificate' %}"
+                enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+            <div class="row">
+              {% for field in certificate_form %}
+                <div class="col-md-6">{% include "partials/field.html" %}</div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-soft btn-sm" type="submit">Add certificate</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

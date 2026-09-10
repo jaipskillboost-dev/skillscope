@@ -1,0 +1,110 @@
+<div class="alert alert-info">
+  A trainer's score is
+  <strong>{{ weights.skill }}% skill</strong> +
+  <strong>{{ weights.experience }}% experience</strong> +
+  <strong>{{ weights.rating }}% learner rating</strong>.
+  {{ weights.threshold }} or above counts as qualified to teach the subject.
+</div>
+
+<div class="ss-card mb-4">
+  <div class="ss-card-head">
+    <h3>Where the gaps are</h3>
+    <span class="ss-label">weakest subjects first</span>
+  </div>
+  <div class="ss-card-body">
+    <div class="ss-heat">
+      {% for row in gaps %}
+        <div class="ss-heat-cell ss-heat-{{ row.level }}">
+          <div class="s">{{ row.subject.name }}</div>
+          <div class="n">{{ row.note }}</div>
+          {% if row.best %}
+            <div class="text-muted mt-1" style="font-size:.75rem">
+              best: {{ row.best.trainer.full_name }} ({{ row.best.total }}%)
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <p class="text-muted mt-3 mb-0" style="font-size:.85rem">
+      A red subject is one nobody scores {{ weights.threshold }} or above on &mdash;
+      it has to be hired for, or trained into.
+    </p>
+  </div>
+</div>
+
+<div class="ss-card">
+  <div class="ss-card-head">
+    <h3>Find a trainer for a subject</h3>
+    <form method="get" class="d-flex gap-2">
+      <select class="form-select form-select-sm" name="subject" onchange="this.form.submit()"
+              aria-label="Choose a subject">
+        <option value="">Choose a subject...</option>
+        {% for s in subjects %}
+          <option value="{{ s.id }}" {% if selected and selected.id == s.id %}selected{% endif %}>
+            {{ s.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  <div class="ss-card-body">
+    {% if not selected %}
+      <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>Pick a subject</h4>
+        <p>Trainers will be ranked, with the reason for each ranking shown.</p>
+      </div>
+    {% else %}
+      {% for row in ranked %}
+        <div class="py-3 {% if not forloop.last %}border-bottom{% endif %}">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+            <div>
+              <span class="ss-ink" style="font-weight:600">
+                {{ forloop.counter }}. {{ row.trainer.full_name }}
+              </span>
+              <div class="text-muted" style="font-size:.82rem">
+                {{ row.trainer.institution.name|default:"No institution" }}
+                {% if row.trainer.designation %}&middot; {{ row.trainer.designation }}{% endif %}
+              </div>
+            </div>
+            <span class="ss-pill {% if row.qualified %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+              {{ row.total }}%{% if row.qualified %} &middot; qualified{% endif %}
+            </span>
+          </div>
+
+          <div class="ss-factor">
+            <span class="ss-factor-name">Skill</span>
+            <span class="ss-factor-track">
+              <span class="ss-factor-fill ss-factor-skill" style="width: {{ row.skill.percent }}%"></span>
+            </span>
+            <span class="ss-factor-value">{{ row.skill.points }}</span>
+          </div>
+          <div class="ss-factor">
+            <span class="ss-factor-name">Experience</span>
+            <span class="ss-factor-track">
+              <span class="ss-factor-fill ss-factor-exp" style="width: {{ row.experience.percent }}%"></span>
+            </span>
+            <span class="ss-factor-value">{{ row.experience.points }}</span>
+          </div>
+          <div class="ss-factor">
+            <span class="ss-factor-name">Learner rating</span>
+            <span class="ss-factor-track">
+              <span class="ss-factor-fill ss-factor-rating" style="width: {{ row.rating.percent }}%"></span>
+            </span>
+            <span class="ss-factor-value">{{ row.rating.points }}</span>
+          </div>
+
+          <div class="text-muted mt-2" style="font-size:.8rem">
+            {{ row.skill.detail }} &middot; {{ row.experience.detail }} &middot; {{ row.rating.detail }}
+          </div>
+        </div>
+      {% empty %}
+        <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="users" %}</span>
+          <h4>No trainers to rank</h4>
+          <p>Add trainer accounts, and make sure their profiles list skills.</p>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>

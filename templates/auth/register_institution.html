@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Register an institution{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card is-wide">
+      <h1 class="h3 mb-1">Register your institution</h1>
+      <p class="text-muted mb-4">
+        A platform administrator checks your registration document before your
+        courses can be published. You can sign in while you wait.
+      </p>
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="ss-form-section">
+          <p class="ss-label mb-3">About the institution</p>
+          <div class="row">
+            {% for field in inst_form %}
+              <div class="col-md-6">{% include "partials/field.html" %}</div>
+            {% endfor %}
+          </div>
+          {% if inst_form.non_field_errors %}
+            <div class="alert alert-danger">{{ inst_form.non_field_errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="ss-form-section">
+          <p class="ss-label mb-3">Your administrator account</p>
+          <div class="row">
+            {% for field in admin_form %}
+              <div class="col-md-6">{% include "partials/field.html" %}</div>
+            {% endfor %}
+          </div>
+          {% if admin_form.non_field_errors %}
+            <div class="alert alert-danger">{{ admin_form.non_field_errors }}</div>
+          {% endif %}
+        </div>
+
+        <button class="btn btn-primary w-100 mt-2" type="submit">Submit application</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

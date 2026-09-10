@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>Hello, {{ user.short_name }}</h1>
+      <p>Here is where you have got to.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'course_catalog' %}">Find a course</a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ total_enrolled }}</div>
+        <div class="ss-stat-label">Courses enrolled</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ in_progress }}</div>
+        <div class="ss-stat-label">In progress</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-success"><div class="ss-stat-value">{{ completed }}</div>
+        <div class="ss-stat-label">Completed</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-gold"><div class="ss-stat-value">{{ certificates }}</div>
+        <div class="ss-stat-label">Certificates</div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Continue learning</h3>
+          <a class="ss-label" href="{% url 'my_learning' %}">See all</a>
+        </div>
+        <div class="ss-card-body">
+          {% for e in enrollments %}
+            <div class="d-flex align-items-center gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+              <div class="flex-grow-1">
+                <a class="ss-ink text-decoration-none" style="font-weight:600"
+                   href="{% url 'course_learn' e.id %}">{{ e.course.title }}</a>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ e.course.institution.name }} &middot; {{ e.course.subject.name }}
+                </div>
+                <div class="ss-progress mt-2">
+                  <div class="ss-progress-bar {% if e.progress_percent >= 100 %}is-complete{% endif %}"
+                       style="width: {{ e.progress_percent }}%"></div>
+                </div>
+              </div>
+              <span class="ss-pill {% if e.progress_percent >= 100 %}ss-pill-verified{% else %}ss-pill-primary{% endif %}">
+                {{ e.progress_percent }}%
+              </span>
+            </div>
+          {% empty %}
+            <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>You have not enrolled on anything yet</h4>
+              <p>Pick a course and it will show up here.</p>
+              <a class="btn btn-primary btn-sm" href="{% url 'course_catalog' %}">Browse courses</a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Assessments due</h3></div>
+        <div class="ss-card-body">
+          {% for a in upcoming %}
+            <div class="{% if not forloop.last %}pb-3 mb-3 border-bottom{% endif %}">
+              <div class="ss-ink" style="font-weight:600;font-size:.92rem">{{ a.title }}</div>
+              <div class="text-muted" style="font-size:.82rem">{{ a.course.title }}</div>
+              <span class="ss-pill ss-pill-pending mt-2">Closes {{ a.deadline|date:"j M, H:i" }}</span>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">Nothing due right now.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

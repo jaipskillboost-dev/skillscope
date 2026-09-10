@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Certificate {{ certificate.serial_no }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 ss-noprint">
+    <a class="btn btn-soft btn-sm" href="{% url 'my_certificates' %}">Back</a>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">Download as PDF</button>
+  </div>
+
+  <div class="ss-certificate">
+    <p class="ss-cert-kicker">Certificate of completion</p>
+    <div class="ss-cert-rule"></div>
+
+    <p class="text-muted mb-1" style="font-size:.9rem">This is to certify that</p>
+    <div class="ss-cert-name">{{ certificate.enrollment.learner.full_name }}</div>
+    <p class="text-muted mb-1" style="font-size:.9rem">has successfully completed</p>
+    <div class="ss-cert-course">{{ certificate.enrollment.course.title }}</div>
+    <p class="text-muted mt-2" style="font-size:.9rem">
+      {{ certificate.enrollment.course.duration_hours }} hours &middot;
+      {{ certificate.enrollment.course.subject.name }}<br>
+      issued by <strong class="ss-ink">{{ certificate.enrollment.course.institution.name }}</strong>
+      {% if certificate.enrollment.course.trainer %}
+        <br>trained by {{ certificate.enrollment.course.trainer.full_name }}
+      {% endif %}
+    </p>
+
+    <div class="ss-cert-foot">
+      <div>
+        <div class="ss-label">Serial number</div>
+        <div class="ss-cert-serial">{{ certificate.serial_no }}</div>
+        <div class="ss-label mt-2">Verification code</div>
+        <div class="ss-cert-serial">{{ certificate.verification_code }}</div>
+        <div class="ss-label mt-2">Issued</div>
+        <div class="ss-cert-serial">{{ certificate.issued_date|date:"j F Y" }}</div>
+      </div>
+
+      <div class="text-center">
+        <div id="qrcode"></div>
+        <div class="text-muted mt-2" style="font-size:.72rem;max-width:150px">
+          Scan to verify at {{ SITE_NAME }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-4 ss-noprint" style="font-size:.85rem">
+    Anyone can check this certificate at
+    <a href="{% url 'verify_certificate' certificate.verification_code %}">
+      {{ SITE_BASE_URL }}{% url 'verify_certificate' certificate.verification_code %}</a>
+    &mdash; no account needed.
+  </p>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/qrcode.min.js' %}"></script>
+<script>
+  // The QR carries the random verification code, not the printed serial
+  // number, so a forged certificate cannot be validated by guessing the next
+  // number in the series.
+  new QRCode(document.getElementById("qrcode"), {
+    text: "{{ SITE_BASE_URL }}{% url 'verify_certificate' certificate.verification_code %}",
+    width: 110, height: 110,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+</script>
+{% endblock %}

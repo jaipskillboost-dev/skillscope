@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Competency mapping{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Competency mapping</h1>
+      <p>
+        Every trainer on {{ SITE_NAME }}, scored per subject &mdash; and the subjects
+        the whole platform is short of.
+      </p>
+    </div>
+  </div>
+
+  {% include "partials/competency_body.html" %}
+</div>
+{% endblock %}

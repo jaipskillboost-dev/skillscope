@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Users</h1>
+      <p>{{ total }} account{{ total|pluralize }} across the platform.</p>
+    </div>
+  </div>
+
+  <div class="ss-card mb-3">
+    <div class="ss-card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label" for="q">Search</label>
+          <input class="form-control" type="search" id="q" name="q" value="{{ q }}"
+                 placeholder="Name or email">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="role">Role</label>
+          <select class="form-select" id="role" name="role">
+            <option value="">All roles</option>
+            {% for value, label in roles %}
+              <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100" type="submit">Filter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body p-0">
+      <div class="ss-table-wrap">
+        <table class="ss-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Institution</th><th>Joined</th></tr></thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td><strong class="ss-ink">{{ u.full_name }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td><span class="ss-pill ss-pill-neutral">{{ u.get_role_display }}</span></td>
+                <td>{{ u.institution.name|default:"&mdash;" }}</td>
+                <td class="num">{{ u.created_at|date:"j M Y" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5"><div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="search" %}</span>
+          <h4>Nobody matched that</h4></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

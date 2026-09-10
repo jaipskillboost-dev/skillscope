@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Bad request{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-error">
+      <div class="ss-error-code">400</div>
+      <h1>That request did not make sense</h1>
+      <p>Something in the address or the form was malformed. Going back and trying again usually sorts it.</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
+        <a class="btn btn-primary" href="{% url 'home' %}">Go to the home page</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

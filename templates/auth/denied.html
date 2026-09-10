@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card text-center">
+      <span class="ss-pill ss-pill-rejected mb-3">403</span>
+      <h1 class="h4 mb-2">That area is not for your account</h1>
+      <p class="text-muted mb-4">
+        You are signed in as
+        <strong class="ss-ink">{{ user.get_role_display|default:"a guest" }}</strong>,
+        and this page belongs to a different role.
+      </p>
+      <a class="btn btn-primary" href="{% url 'dashboard' %}">Go to my dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

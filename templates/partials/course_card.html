@@ -1,0 +1,27 @@
+{% load skillscope_extras %}
+<div class="col-md-6 col-lg-4">
+  <a class="ss-card h-100 d-flex flex-column" href="{% url 'course_detail' course.id %}">
+    <div class="ss-course-cover {{ course.subject|subject_colour }}">
+      {% if course.cover_image %}
+        <img src="{{ course.cover_image.url }}" alt="">
+      {% else %}
+        {{ course.subject.name }}
+      {% endif %}
+    </div>
+    <div class="ss-card-body d-flex flex-column flex-grow-1">
+      <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+        <span class="ss-subject {{ course.subject|subject_colour }}">{{ course.subject.name }}</span>
+        <span class="ss-pill ss-pill-neutral">{{ course.get_level_display }}</span>
+      </div>
+      <div class="ss-course-title">{{ course.title }}</div>
+      <div class="text-muted mb-3" style="font-size:.84rem">{{ course.institution.name }}</div>
+      <div class="ss-course-meta mt-auto">
+        <span>{% include "partials/icon.html" with icon="clock" %}{{ course.duration_hours }} hours</span>
+        <span>{% include "partials/icon.html" with icon="users" %}{{ course.enrolled_count }}</span>
+        {% if course.average_rating %}
+          <span>{% include "partials/icon.html" with icon="sparkle" %}{{ course.average_rating }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+</div>

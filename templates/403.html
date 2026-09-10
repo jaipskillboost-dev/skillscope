@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-error">
+      <div class="ss-error-code">403</div>
+      <h1>That is not yours to open</h1>
+      <p>You are signed in, but this page belongs to a different role or a different institution.</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center mt-4">
+        <a class="btn btn-primary" href="{% url 'dashboard' %}">My dashboard</a><a class="btn btn-soft" href="{% url 'home' %}">Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

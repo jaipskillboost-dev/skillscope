@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Institutions{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Institutions</h1>
+      <p>Only verified institutions can publish courses to the public catalogue.</p>
+    </div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-sm {% if not status %}btn-primary{% else %}btn-soft{% endif %}"
+       href="{% url 'platform_institutions' %}">All</a>
+    {% for value, label in statuses %}
+      <a class="btn btn-sm {% if status == value %}btn-primary{% else %}btn-soft{% endif %}"
+         href="{% url 'platform_institutions' %}?status={{ value }}">
+        {{ label }}{% if value == 'PENDING' and pending_count %} ({{ pending_count }}){% endif %}
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body p-0">
+      <div class="ss-table-wrap">
+        <table class="ss-table">
+          <thead>
+            <tr><th>Institution</th><th>Type</th><th>City</th>
+                <th>People</th><th>Courses</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for i in institutions %}
+              <tr>
+                <td>
+                  <strong class="ss-ink">{{ i.name }}</strong>
+                  <div class="text-muted" style="font-size:.8rem">{{ i.registration_no }}</div>
+                </td>
+                <td>{{ i.get_institution_type_display }}</td>
+                <td>{{ i.city }}</td>
+                <td class="num">{{ i.member_count }}</td>
+                <td class="num">{{ i.course_count }}</td>
+                <td>
+                  <span class="ss-pill
+                    {% if i.status == 'VERIFIED' %}ss-pill-verified
+                    {% elif i.status == 'PENDING' %}ss-pill-pending
+                    {% else %}ss-pill-rejected{% endif %}">
+                    {{ i.get_status_display }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <a class="btn btn-sm {% if i.status == 'PENDING' %}btn-primary{% else %}btn-soft{% endif %}"
+                     href="{% url 'platform_institution_review' i.id %}">
+                    {% if i.status == 'PENDING' %}Review{% else %}Open{% endif %}
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="7"><div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>Nothing here</h4></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

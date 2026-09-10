@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }} - manage{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <span class="ss-pill ss-pill-primary mb-2">{{ course.subject.name }}</span>
+      <h1>{{ course.title }}</h1>
+      <p>{{ course.code }} &middot; {{ course.get_status_display }}
+         &middot; {{ enrollments|length }} learner{{ enrollments|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'trainer_courses' %}">All my courses</a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+
+      <div class="ss-card mb-3">
+        <div class="ss-card-head">
+          <h3>Course material</h3>
+          <span class="ss-label">{{ resources|length }} item{{ resources|length|pluralize }}</span>
+        </div>
+        <div class="ss-card-body">
+          {% for r in resources %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <span class="ss-pill ss-pill-neutral">{{ r.get_resource_type_display }}</span>
+              <div class="flex-grow-1">
+                <div class="ss-ink" style="font-weight:600;font-size:.92rem">{{ r.title }}</div>
+                {% if r.description %}
+                  <div class="text-muted" style="font-size:.8rem">{{ r.description }}</div>
+                {% endif %}
+              </div>
+              <form method="post" action="{% url 'trainer_delete_resource' r.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-soft" type="submit">Remove</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted" style="font-size:.9rem">
+              Nothing uploaded yet. Learners cannot make progress until there is material.
+            </p>
+          {% endfor %}
+
+          <div class="ss-form-section">
+            <p class="ss-label mb-3">Upload material</p>
+            <form method="post" action="{% url 'trainer_add_resource' course.id %}"
+                  enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+                {% for field in resource_form %}
+                  <div class="col-md-6">{% include "partials/field.html" %}</div>
+                {% endfor %}
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit" data-busy-label="Uploading...">Upload</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Assessments</h3></div>
+        <div class="ss-card-body">
+          {% for a in assessments %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <a class="ss-ink text-decoration-none" style="font-weight:600"
+                   href="{% url 'trainer_assessment_manage' a.id %}">{{ a.title }}</a>
+                <div class="text-muted" style="font-size:.8rem">
+                  {{ a.n }} question{{ a.n|pluralize }} &middot;
+                  closes {{ a.deadline|date:"j M Y, H:i" }}
+                </div>
+              </div>
+              <span class="ss-pill {% if a.is_open %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                {% if a.is_open %}Open{% else %}Closed{% endif %}
+              </span>
+            </div>
+          {% empty %}
+            <p class="text-muted" style="font-size:.9rem">No assessment on this course yet.</p>
+          {% endfor %}
+
+          <div class="ss-form-section">
+            <p class="ss-label mb-3">New assessment</p>
+            <form method="post" action="{% url 'trainer_create_assessment' course.id %}">
+              {% csrf_token %}
+              <div class="row">
+                {% for field in assessment_form %}
+                  <div class="col-md-6">{% include "partials/field.html" %}</div>
+                {% endfor %}
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit">Create assessment</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Who is enrolled</h3>
+          <span class="ss-label">{{ enrollments|length }}</span>
+        </div>
+        <div class="ss-card-body p-0">
+          <div class="ss-table-wrap">
+            <table class="ss-table">
+              <thead><tr><th>Learner</th><th>Progress</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for e in enrollments %}
+                  <tr>
+                    <td>{{ e.learner.full_name }}</td>
+                    <td style="min-width:110px">
+                      <div class="ss-progress">
+                        <div class="ss-progress-bar {% if e.progress_percent >= 100 %}is-complete{% endif %}"
+                             style="width: {{ e.progress_percent }}%"></div>
+                      </div>
+                      <span class="num text-muted" style="font-size:.78rem">{{ e.progress_percent }}%</span>
+                    </td>
+                    <td>
+                      <span class="ss-pill {% if e.status == 'COMPLETED' %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                        {{ e.get_status_display }}
+                      </span>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="text-muted">Nobody has enrolled yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

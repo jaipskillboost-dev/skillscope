@@ -1,0 +1,13 @@
+{% comment %}
+Usage:
+  {% include "partials/empty.html" with icon="book" title="No courses yet"
+     body="Create one, then assign a trainer." action_url=url action_label="New course" %}
+{% endcomment %}
+<div class="ss-empty">
+  <span class="ss-empty-icon">{% include "partials/icon.html" with icon=icon|default:"info" %}</span>
+  <h4>{{ title }}</h4>
+  {% if body %}<p>{{ body }}</p>{% endif %}
+  {% if action_url %}
+    <a class="btn btn-primary btn-sm mt-2" href="{{ action_url }}">{{ action_label }}</a>
+  {% endif %}
+</div>

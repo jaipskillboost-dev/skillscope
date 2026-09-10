@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Platform dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>Platform overview</h1>
+      <p>Everything happening across {{ SITE_NAME }}.</p>
+    </div>
+    {% if pending_count %}
+      <a class="btn btn-primary" href="{% url 'platform_institutions' %}?status=PENDING">
+        Review {{ pending_count }} application{{ pending_count|pluralize }}
+      </a>
+    {% endif %}
+  </div>
+
+  {% if pending_count %}
+    <div class="alert alert-warning">
+      {{ pending_count }} institution{{ pending_count|pluralize }}
+      {{ pending_count|pluralize:"is,are" }} waiting for verification.
+      Their courses stay hidden from the public catalogue until you approve them.
+    </div>
+  {% endif %}
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ verified_count }}</div>
+        <div class="ss-stat-label">Verified institutions</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ course_count }}</div>
+        <div class="ss-stat-label">Courses</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ enrollment_count }}</div>
+        <div class="ss-stat-label">Enrolments</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-gold"><div class="ss-stat-value">{{ certificate_count }}</div>
+        <div class="ss-stat-label">Certificates issued</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ learner_count }}</div>
+        <div class="ss-stat-label">Learners</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ trainer_count }}</div>
+        <div class="ss-stat-label">Trainers</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ attempt_count }}</div>
+        <div class="ss-stat-label">Assessments taken</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ user_count }}</div>
+        <div class="ss-stat-label">Accounts</div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Enrolments by institution</h3></div>
+        <div class="ss-card-body">
+          {{ chart_labels|json_script:"chartLabels" }}
+          {{ chart_values|json_script:"chartValues" }}
+          <canvas id="instChart" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Waiting for review</h3>
+          <a class="ss-label" href="{% url 'platform_institutions' %}">All institutions</a>
+        </div>
+        <div class="ss-card-body">
+          {% for i in pending_institutions %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <a class="ss-ink text-decoration-none" style="font-weight:600"
+                   href="{% url 'platform_institution_review' i.id %}">{{ i.name }}</a>
+                <div class="text-muted" style="font-size:.8rem">
+                  {{ i.city }} &middot; applied {{ i.applied_at|date:"j M Y" }}
+                </div>
+              </div>
+              <span class="ss-pill ss-pill-pending">Pending</span>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">
+              Nothing waiting. Every application has been reviewed.
+            </p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script>
+  (function () {
+    var labels = JSON.parse(document.getElementById('chartLabels').textContent);
+    var values = JSON.parse(document.getElementById('chartValues').textContent);
+    new Chart(document.getElementById('instChart'), {
+      type: 'bar',
+      data: { labels: labels,
+              datasets: [{ label: 'Enrolments', data: values, backgroundColor: '#4f46e5',
+                           borderRadius: 4 }] },
+      options: { indexAxis: 'y', plugins: { legend: { display: false } },
+                 scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ institution.name }} - dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <span class="ss-pill ss-pill-verified mb-2">Verified institution</span>
+      <h1>{{ institution.name }}</h1>
+      <p>{{ institution.get_institution_type_display }} &middot; {{ institution.city }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'institute_course_create' %}">New course</a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ total_courses }}</div>
+        <div class="ss-stat-label">Courses ({{ published }} published)</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ trainer_count }}</div>
+        <div class="ss-stat-label">Trainers</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ enrollment_count }}</div>
+        <div class="ss-stat-label">Enrolments</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-gold"><div class="ss-stat-value">{{ certificate_count }}</div>
+        <div class="ss-stat-label">Certificates issued</div></div>
+    </div>
+  </div>
+
+  {% if unassigned %}
+    <div class="alert alert-warning">
+      {{ unassigned }} course{{ unassigned|pluralize }} ha{{ unassigned|pluralize:"s,ve" }}
+      no trainer assigned. Nobody can upload material until one is.
+      <a href="{% url 'institute_courses' %}">Assign a trainer</a>.
+    </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Enrolments per course</h3></div>
+        <div class="ss-card-body">
+          {{ chart_labels|json_script:"chartLabels" }}
+          {{ chart_values|json_script:"chartValues" }}
+          <canvas id="enrolChart" height="150"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Recent courses</h3>
+          <a class="ss-label" href="{% url 'institute_courses' %}">See all</a>
+        </div>
+        <div class="ss-card-body">
+          {% for c in recent_courses %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <div class="ss-ink" style="font-weight:600;font-size:.9rem">{{ c.title }}</div>
+                <div class="text-muted" style="font-size:.8rem">
+                  {{ c.subject.name }} &middot;
+                  {% if c.trainer %}{{ c.trainer.full_name }}{% else %}
+                    <span style="color:var(--ss-danger)">no trainer</span>{% endif %}
+                </div>
+              </div>
+              <span class="ss-pill {% if c.is_published %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                {{ c.get_status_display }}
+              </span>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">No courses yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script>
+  (function () {
+    var labels = JSON.parse(document.getElementById('chartLabels').textContent);
+    var values = JSON.parse(document.getElementById('chartValues').textContent);
+    new Chart(document.getElementById('enrolChart'), {
+      type: 'bar',
+      data: { labels: labels,
+              datasets: [{ label: 'Enrolments', data: values, backgroundColor: '#4f46e5',
+                           borderRadius: 4 }] },
+      options: { plugins: { legend: { display: false } },
+                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+  })();
+</script>
+{% endblock %}

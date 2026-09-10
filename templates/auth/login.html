@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sign in - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      <h1 class="h3 mb-1">Welcome back</h1>
+      <p class="text-muted mb-4">Sign in to carry on where you left off.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "partials/form.html" %}
+        <button class="btn btn-primary w-100" type="submit" data-busy-label="Signing in...">Sign in</button>
+      </form>
+
+      <p class="text-center text-muted mt-4 mb-0" style="font-size:.9rem">
+        New here? <a href="{% url 'register' %}">Create an account</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

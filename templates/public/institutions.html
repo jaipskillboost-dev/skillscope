@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Institutions - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Verified institutions</h1>
+      <p>Every institution here has had its registration document checked.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for inst in institutions %}
+      <div class="col-md-6 col-lg-4">
+        <div class="ss-card h-100">
+          <div class="ss-card-body">
+            <span class="ss-pill ss-pill-verified mb-2">Verified</span>
+            <div class="ss-ink" style="font-weight:600">{{ inst.name }}</div>
+            <div class="text-muted" style="font-size:.85rem">
+              {{ inst.get_institution_type_display }} &middot; {{ inst.city }}
+            </div>
+            <div class="text-muted mt-2" style="font-size:.85rem">
+              {{ inst.course_count }} published course{{ inst.course_count|pluralize }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12"><div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="building" %}</span>
+          <h4>No verified institutions yet</h4></div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

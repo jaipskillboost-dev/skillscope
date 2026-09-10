@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{{ institution.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <span class="ss-pill
+        {% if institution.status == 'VERIFIED' %}ss-pill-verified
+        {% elif institution.status == 'PENDING' %}ss-pill-pending
+        {% else %}ss-pill-rejected{% endif %} mb-2">
+        {{ institution.get_status_display }}
+      </span>
+      <h1>{{ institution.name }}</h1>
+      <p>Applied {{ institution.applied_at|date:"j F Y" }}</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'platform_institutions' %}">Back</a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="ss-card mb-3">
+        <div class="ss-card-head"><h3>Application details</h3></div>
+        <div class="ss-card-body">
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">Type</span>
+            <strong class="ss-ink">{{ institution.get_institution_type_display }}</strong>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">Registration number</span>
+            <strong class="ss-ink ss-cert-serial">{{ institution.registration_no }}</strong>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">Location</span>
+            <strong class="ss-ink">{{ institution.city }}{% if institution.state %}, {{ institution.state }}{% endif %}</strong>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">Contact</span>
+            <strong class="ss-ink">{{ institution.contact_email }}</strong>
+          </div>
+          {% if institution.website %}
+          <div class="d-flex justify-content-between py-2 border-bottom">
+            <span class="text-muted">Website</span>
+            <a href="{{ institution.website }}" target="_blank" rel="noopener noreferrer">
+              {{ institution.website }}</a>
+          </div>
+          {% endif %}
+          <div class="d-flex justify-content-between py-2">
+            <span class="text-muted">Proof document</span>
+            {% if institution.document %}
+              <a href="{{ institution.document.url }}" target="_blank">Open document</a>
+            {% else %}
+              <span style="color:var(--ss-danger)">None uploaded</span>
+            {% endif %}
+          </div>
+
+          {% if institution.description %}
+            <div class="ss-form-section">
+              <p class="ss-label mb-2">About</p>
+              <p class="mb-0" style="font-size:.92rem">{{ institution.description }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>People</h3></div>
+        <div class="ss-card-body">
+          {% for m in members %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <div class="ss-ink" style="font-weight:600;font-size:.92rem">{{ m.full_name }}</div>
+                <div class="text-muted" style="font-size:.8rem">{{ m.email }}</div>
+              </div>
+              <span class="ss-pill ss-pill-neutral">{{ m.get_role_display }}</span>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">Nobody yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Decision</h3></div>
+        <div class="ss-card-body">
+          {% if institution.status == 'VERIFIED' %}
+            <div class="alert alert-success mb-3">
+              Verified on {{ institution.verified_at|date:"j F Y" }}
+              {% if institution.verified_by %}by {{ institution.verified_by.full_name }}{% endif %}.
+            </div>
+          {% elif institution.status == 'REJECTED' %}
+            <div class="alert alert-danger mb-3">
+              <strong>Rejected.</strong><br>{{ institution.rejection_reason }}
+            </div>
+          {% endif %}
+
+          <p class="text-muted" style="font-size:.88rem">
+            Check the registration document against the details before approving.
+            Once verified, this institution can publish courses that anyone can enrol on.
+          </p>
+
+          <form method="post" class="mt-3">
+            {% csrf_token %}
+            <button class="btn btn-success w-100 mb-3" type="submit" name="action" value="verify" data-busy-label="Verifying...">
+              {% if institution.status == 'VERIFIED' %}Re-verify{% else %}Verify this institution{% endif %}
+            </button>
+
+            <div class="ss-form-section">
+              <label class="form-label" for="rejection_reason">Reason for rejecting</label>
+              <textarea class="form-control mb-2" id="rejection_reason" name="rejection_reason"
+                        rows="3" placeholder="Shown to the applicant so they know what to fix"
+                        >{{ institution.rejection_reason }}</textarea>
+              <button class="btn btn-danger w-100" type="submit" name="action" value="reject" data-busy-label="Rejecting...">
+                Reject application
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

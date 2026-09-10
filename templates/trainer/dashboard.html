@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Trainer dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>Hello, {{ user.short_name }}</h1>
+      <p>{{ user.institution.name }} &middot; {{ user.designation|default:"Trainer" }}</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'profile' %}">Update my skills</a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ total_courses }}</div>
+        <div class="ss-stat-label">Courses assigned</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ learner_count }}</div>
+        <div class="ss-stat-label">Learners</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ assessment_count }}</div>
+        <div class="ss-stat-label">Assessments</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ open_assessments }}</div>
+        <div class="ss-stat-label">Still open</div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>My courses</h3>
+          <a class="ss-label" href="{% url 'trainer_courses' %}">See all</a>
+        </div>
+        <div class="ss-card-body">
+          {% for c in courses %}
+            <div class="d-flex justify-content-between align-items-center py-3 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <a class="ss-ink text-decoration-none" style="font-weight:600"
+                   href="{% url 'trainer_course_manage' c.id %}">{{ c.title }}</a>
+                <div class="text-muted" style="font-size:.82rem">
+                  {{ c.code }} &middot; {{ c.subject.name }}
+                </div>
+              </div>
+              <span class="ss-pill {% if c.is_published %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                {{ c.get_status_display }}
+              </span>
+            </div>
+          {% empty %}
+            <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="book" %}</span>
+          <h4>No courses assigned yet</h4>
+              <p>Your institute admin assigns courses to you.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Recent submissions</h3></div>
+        <div class="ss-card-body">
+          {% for a in recent_attempts %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div>
+                <div class="ss-ink" style="font-weight:600;font-size:.9rem">{{ a.learner.full_name }}</div>
+                <div class="text-muted" style="font-size:.8rem">{{ a.assessment.title }}</div>
+              </div>
+              <span class="ss-pill {% if a.passed %}ss-pill-verified{% else %}ss-pill-rejected{% endif %}">
+                {{ a.percentage|floatformat:0 }}%
+              </span>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">Nobody has submitted anything yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

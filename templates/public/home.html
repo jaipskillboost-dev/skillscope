@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ SITE_NAME }} - {{ SITE_TAGLINE }}{% endblock %}
+
+{% block content %}
+
+<section class="ss-hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <span class="ss-pill ss-pill-primary mb-3">Verified institutions only</span>
+        <h1>Build real skills, and prove you have them.</h1>
+        <p class="lead">
+          Courses run by verified institutions, taught by trainers matched to
+          their subject, ending in a certificate anyone can check.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <a class="btn btn-primary" href="{% url 'course_catalog' %}">Browse courses</a>
+          <a class="btn btn-outline-primary" href="{% url 'register' %}">Join {{ SITE_NAME }}</a>
+        </div>
+
+        <div class="ss-hero-stats">
+          <div class="ss-hero-stat">
+            <div class="v">{{ course_count }}</div><div class="k">courses</div>
+          </div>
+          <div class="ss-hero-stat">
+            <div class="v">{{ institution_count }}</div><div class="k">institutions</div>
+          </div>
+          <div class="ss-hero-stat">
+            <div class="v">{{ learner_count }}</div><div class="k">learners</div>
+          </div>
+          <div class="ss-hero-stat">
+            <div class="v">{{ certificate_count }}</div><div class="k">certificates issued</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="ss-card">
+          <div class="ss-card-head"><h3>Latest from {{ SITE_NAME }}</h3></div>
+          <div class="ss-card-body">
+            {% for notice in notices %}
+              <div class="{% if not forloop.last %}pb-3 mb-3 border-bottom{% endif %}">
+                <span class="ss-pill
+                  {% if notice.announcement_type == 'ACHIEVEMENT' %}ss-pill-verified
+                  {% elif notice.announcement_type == 'NEW_CONTENT' %}ss-pill-primary
+                  {% elif notice.announcement_type == 'NOTIFICATION' %}ss-pill-pending
+                  {% else %}ss-pill-neutral{% endif %} mb-2">
+                  {{ notice.get_announcement_type_display }}
+                </span>
+                <div class="ss-ink" style="font-weight:600;font-size:.95rem">{{ notice.title }}</div>
+                <div class="text-muted" style="font-size:.85rem">{{ notice.body|truncatewords:22 }}</div>
+              </div>
+            {% empty %}
+              <p class="text-muted mb-0" style="font-size:.9rem">No notices yet.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container py-5">
+
+  <div class="ss-page-head">
+    <div>
+      <h2>Explore by subject</h2>
+      <p>Every course belongs to a subject, which is also how trainers are matched.</p>
+    </div>
+  </div>
+  <div class="row g-3 mb-5">
+    {% for subject in subjects %}
+      <div class="col-6 col-md-3">
+        <a class="ss-card h-100" href="{% url 'course_catalog' %}?subject={{ subject.id }}">
+          <div class="ss-card-body">
+            <div class="ss-ink" style="font-weight:600">{{ subject.name }}</div>
+            <div class="text-muted" style="font-size:.82rem">
+              {{ subject.n }} course{{ subject.n|pluralize }}
+            </div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="ss-page-head">
+    <div>
+      <h2>Newest courses</h2>
+      <p>Published by institutions we have verified.</p>
+    </div>
+    <a class="btn btn-soft btn-sm" href="{% url 'course_catalog' %}">See all</a>
+  </div>
+  <div class="row g-3">
+    {% for course in courses %}{% include "partials/course_card.html" %}{% empty %}
+      <div class="col-12"><div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="book" %}</span>
+          <h4>No courses published yet</h4></div></div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

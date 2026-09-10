@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}{{ assessment.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>{{ assessment.title }}</h1>
+      <p>
+        {{ assessment.course.title }} &middot;
+        closes {{ assessment.deadline|date:"j F Y, H:i" }} &middot;
+        pass mark {{ assessment.pass_percent }}%
+      </p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'trainer_course_manage' assessment.course.id %}">
+      Back to course
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ attempted }}/{{ enrolled }}</div>
+        <div class="ss-stat-label">Submitted</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat"><div class="ss-stat-value">{{ participation }}%</div>
+        <div class="ss-stat-label">Participation</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat is-success"><div class="ss-stat-value">{{ passed }}</div>
+        <div class="ss-stat-label">Passed</div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ss-stat">
+        <div class="ss-stat-value">{% if average %}{{ average|floatformat:0 }}%{% else %}&mdash;{% endif %}</div>
+        <div class="ss-stat-label">Average score</div></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-7">
+
+      <div class="ss-card mb-3">
+        <div class="ss-card-head">
+          <h3>Questions</h3>
+          <span class="ss-label">{{ questions|length }}</span>
+        </div>
+        <div class="ss-card-body">
+          {% for q in questions %}
+            <div class="py-3 {% if not forloop.last %}border-bottom{% endif %}">
+              <div class="ss-ink" style="font-weight:600;font-size:.93rem">
+                {{ forloop.counter }}. {{ q.question_text }}
+              </div>
+              <div class="text-muted mt-1" style="font-size:.82rem">
+                {% for letter, text in q.options %}
+                  <span class="{% if letter == q.correct_option %}fw-bold{% endif %}"
+                        {% if letter == q.correct_option %}style="color:var(--ss-success)"{% endif %}>
+                    {{ letter }}. {{ text }}
+                  </span>{% if not forloop.last %} &nbsp;&middot;&nbsp; {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted" style="font-size:.9rem">
+              No questions yet. Learners cannot sit an empty assessment.
+            </p>
+          {% endfor %}
+
+          <div class="ss-form-section">
+            <p class="ss-label mb-3">Add a question</p>
+            <form method="post" action="{% url 'trainer_add_question' assessment.id %}">
+              {% csrf_token %}
+              <div class="row">
+                {% for field in question_form %}
+                  <div class="col-md-6">{% include "partials/field.html" %}</div>
+                {% endfor %}
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit">Add question</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="ss-card">
+        <div class="ss-card-head">
+          <h3>Which questions caught people out</h3>
+        </div>
+        <div class="ss-card-body">
+          {% for row in analysis %}
+            <div class="py-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div class="d-flex justify-content-between align-items-center gap-3">
+                <div class="text-muted" style="font-size:.87rem">
+                  {{ forloop.counter }}. {{ row.question.question_text|truncatewords:12 }}
+                </div>
+                {% if row.percent is not None %}
+                  <span class="ss-pill {% if row.percent < 50 %}ss-pill-rejected{% elif row.percent < 80 %}ss-pill-pending{% else %}ss-pill-verified{% endif %}">
+                    {{ row.percent }}% right
+                  </span>
+                {% else %}
+                  <span class="ss-pill ss-pill-neutral">no data</span>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted mb-0" style="font-size:.9rem">
+              Analysis appears once people start submitting.
+            </p>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-5">
+      <div class="ss-card">
+        <div class="ss-card-head"><h3>Results</h3></div>
+        <div class="ss-card-body p-0">
+          <div class="ss-table-wrap">
+            <table class="ss-table">
+              <thead><tr><th>Learner</th><th>Score</th><th>Result</th></tr></thead>
+              <tbody>
+                {% for a in attempts %}
+                  <tr>
+                    <td>{{ a.learner.full_name }}</td>
+                    <td class="num">{{ a.score }}/{{ a.total_marks }}
+                      <span class="text-muted">({{ a.percentage|floatformat:0 }}%)</span>
+                    </td>
+                    <td>
+                      <span class="ss-pill {% if a.passed %}ss-pill-verified{% else %}ss-pill-rejected{% endif %}">
+                        {% if a.passed %}Pass{% else %}Fail{% endif %}
+                      </span>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="text-muted">Nothing submitted yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}My certificates{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>My certificates</h1>
+      <p>Each one has a code anyone can check without signing in.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for c in certificates %}
+      <div class="col-md-6">
+        <a class="ss-card h-100" href="{% url 'certificate_view' c.id %}">
+          <div class="ss-card-body">
+            <span class="ss-pill ss-pill-verified mb-2">Issued</span>
+            <div class="ss-course-title">{{ c.enrollment.course.title }}</div>
+            <div class="text-muted mb-3" style="font-size:.85rem">
+              {{ c.enrollment.course.institution.name }}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="ss-cert-serial">{{ c.serial_no }}</span>
+              <span class="text-muted" style="font-size:.82rem">
+                {{ c.issued_date|date:"j M Y" }}
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="award" %}</span>
+          <h4>No certificates yet</h4>
+          <p>Finish all the material on a course and pass its assessment to earn one.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

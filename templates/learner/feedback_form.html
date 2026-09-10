@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Feedback - {{ enrollment.course.title }}{% endblock %}
+
+{% block content %}
+<div class="ss-auth">
+  <div class="container">
+    <div class="ss-auth-card">
+      <h1 class="h4 mb-1">How was it?</h1>
+      <p class="text-muted mb-4">{{ enrollment.course.title }}</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "partials/form.html" %}
+        <button class="btn btn-primary w-100" type="submit">Send feedback</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

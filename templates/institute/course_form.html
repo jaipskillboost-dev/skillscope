@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if course %}Edit course{% else %}New course{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 760px">
+  <div class="ss-page-head">
+    <div>
+      <h1>{% if course %}Edit course{% else %}New course{% endif %}</h1>
+      <p>Only trainers from your institution can be assigned.</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'institute_courses' %}">Cancel</a>
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="row">
+          {% for field in form %}
+            <div class="col-md-6">{% include "partials/field.html" %}</div>
+          {% endfor %}
+        </div>
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <button class="btn btn-primary" type="submit">
+          {% if course %}Save changes{% else %}Create course{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

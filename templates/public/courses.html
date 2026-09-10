@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Courses - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="ss-page-head">
+    <div>
+      <h1>Courses</h1>
+      <p>{{ courses|length }} course{{ courses|length|pluralize }} from verified institutions.</p>
+    </div>
+  </div>
+
+  <div class="ss-card mb-4">
+    <div class="ss-card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label" for="q">Search</label>
+          <input class="form-control" type="search" id="q" name="q" value="{{ q }}"
+                 placeholder="Course, topic or institution">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="subject">Subject</label>
+          <select class="form-select" id="subject" name="subject">
+            <option value="">All subjects</option>
+            {% for s in subjects %}
+              <option value="{{ s.id }}" {% if subject_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="level">Level</label>
+          <select class="form-select" id="level" name="level">
+            <option value="">Any</option>
+            {% for value, label in levels %}
+              <option value="{{ value }}" {% if level == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100" type="submit">Filter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for course in courses %}{% include "partials/course_card.html" %}{% empty %}
+      <div class="col-12">
+        <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="search" %}</span>
+          <h4>Nothing matched that</h4>
+          <p>Try a different subject or clear the search.</p>
+          <a class="btn btn-soft btn-sm" href="{% url 'course_catalog' %}">Clear filters</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

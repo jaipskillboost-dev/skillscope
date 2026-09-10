@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Trainers{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Trainers</h1>
+      <p>You create trainer accounts &mdash; trainers do not sign themselves up.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'institute_trainer_create' %}">Add a trainer</a>
+  </div>
+
+  <div class="ss-card">
+    <div class="ss-card-body p-0">
+      <div class="ss-table-wrap">
+        <table class="ss-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role at institution</th><th>Courses</th></tr>
+          </thead>
+          <tbody>
+            {% for t in trainers %}
+              <tr>
+                <td><strong class="ss-ink">{{ t.full_name }}</strong></td>
+                <td>{{ t.email }}</td>
+                <td>{{ t.designation|default:"Trainer" }}</td>
+                <td class="num">{{ t.course_count }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4">
+                <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="users" %}</span>
+          <h4>No trainers yet</h4>
+                  <p>Add one, then assign them to a course.</p>
+                  <a class="btn btn-primary btn-sm" href="{% url 'institute_trainer_create' %}">
+                    Add a trainer
+                  </a>
+                </div>
+              </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

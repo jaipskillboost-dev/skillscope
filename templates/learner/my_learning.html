@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load skillscope_extras %}
+{% block title %}My learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>My learning</h1>
+      <p>Everything you have enrolled on.</p>
+    </div>
+    <a class="btn btn-soft" href="{% url 'course_catalog' %}">Find another course</a>
+  </div>
+
+  <div class="row g-3">
+    {% for e in enrollments %}
+      <div class="col-md-6">
+        <a class="ss-card h-100" href="{% url 'course_learn' e.id %}">
+          <div class="ss-card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <span class="ss-subject {{ e.course.subject|subject_colour }}">{{ e.course.subject.name }}</span>
+              <span class="ss-pill {% if e.status == 'COMPLETED' %}ss-pill-verified{% else %}ss-pill-neutral{% endif %}">
+                {{ e.get_status_display }}
+              </span>
+            </div>
+            <div class="ss-course-title">{{ e.course.title }}</div>
+            <div class="text-muted mb-3" style="font-size:.85rem">
+              {{ e.course.institution.name }}
+              {% if e.course.trainer %}&middot; {{ e.course.trainer.full_name }}{% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <div class="ss-ring {% if e.progress_percent >= 100 %}is-complete{% endif %}"
+                   style="--value: {{ e.progress_percent }}" aria-hidden="true">
+                <span>{{ e.progress_percent }}%</span>
+              </div>
+              <div class="flex-grow-1">
+                <div class="ss-progress">
+                  <div class="ss-progress-bar {% if e.progress_percent >= 100 %}is-complete{% endif %}"
+                       style="width: {{ e.progress_percent }}%"></div>
+                </div>
+                <div class="text-muted mt-2" style="font-size:.8rem">
+                  {% if e.progress_percent >= 100 %}Finished{% else %}{{ e.progress_percent }}% complete{% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>Nothing here yet</h4>
+          <p>Once you enrol on a course it appears here.</p>
+          <a class="btn btn-primary btn-sm" href="{% url 'course_catalog' %}">Browse courses</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

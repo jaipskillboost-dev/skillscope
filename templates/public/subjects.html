@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Subjects - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="ss-page-head">
+    <div>
+      <h1>Subjects</h1>
+      <p>Courses are grouped by subject, and trainers are matched to subjects the same way.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for subject in subjects %}
+      <div class="col-md-6 col-lg-4">
+        <a class="ss-card h-100" href="{% url 'course_catalog' %}?subject={{ subject.id }}">
+          <div class="ss-card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <div class="ss-ink" style="font-weight:600">{{ subject.name }}</div>
+                <div class="text-muted mt-1" style="font-size:.85rem">{{ subject.description }}</div>
+              </div>
+              <span class="ss-pill ss-pill-primary">{{ subject.course_count }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12"><div class="ss-empty">
+          <span class="ss-empty-icon">{% include "partials/icon.html" with icon="info" %}</span>
+          <h4>No subjects yet</h4></div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
