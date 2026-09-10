@@ -8,7 +8,7 @@ anything in front of the public.
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, OuterRef, Q, Subquery
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -35,11 +35,26 @@ def public_courses():
     The one definition of "a course the public may see".
 
     Used by every public page so the rule cannot drift apart between them.
+
+    Each course also comes with its learner count and average rating already
+    worked out, in this same query. Course cards show both, and asking for
+    them one card at a time was thirty-seven queries for twelve courses.
     """
+    # The average rating is a small query of its own, run once per course
+    # inside the main one. Joining feedback directly would multiply its rows
+    # by the enrolment rows and throw off the count below.
+    ratings = (Feedback.objects.filter(course=OuterRef("pk"))
+               .values("course")
+               .annotate(avg=Avg("overall_rating"))
+               .values("avg"))
+
     return Course.objects.filter(
         status=CourseStatus.PUBLISHED,
         institution__status=InstitutionStatus.VERIFIED,
-    ).select_related("subject", "institution", "trainer")
+    ).select_related("subject", "institution", "trainer").annotate(
+        enrolled_total=Count("enrollments", distinct=True),
+        rating_avg=Subquery(ratings),
+    )
 
 
 # ===========================================================================
@@ -82,7 +97,7 @@ def course_catalog(request):
         )
 
     return render(request, "public/courses.html", {
-        "courses": courses.annotate(learners=Count("enrollments")),
+        "courses": courses,
         "subjects": Subject.objects.all(),
         "levels": Course._meta.get_field("level").choices,
         "subject_id": subject_id or "",

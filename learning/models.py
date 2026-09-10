@@ -197,13 +197,25 @@ class Course(models.Model):
     def is_published(self):
         return self.status == CourseStatus.PUBLISHED
 
+    # Both of these would otherwise ask the database a separate question for
+    # every course on a page -- twelve course cards meant thirty-seven queries,
+    # which on a hosted database took eleven seconds. Pages that list courses
+    # therefore work the figures out in the same query that fetches the courses
+    # (see public_courses in views.py), and these use that answer when it is
+    # there. A single course on its own still works, it just asks separately.
+
     @property
     def enrolled_count(self):
+        if hasattr(self, "enrolled_total"):
+            return self.enrolled_total
         return self.enrollments.count()
 
     @property
     def average_rating(self):
-        result = self.feedback.aggregate(models.Avg("overall_rating"))["overall_rating__avg"]
+        if hasattr(self, "rating_avg"):
+            result = self.rating_avg
+        else:
+            result = self.feedback.aggregate(models.Avg("overall_rating"))["overall_rating__avg"]
         return round(result, 1) if result else None
 
 

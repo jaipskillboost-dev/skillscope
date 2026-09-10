@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from accounts.models import Institution, InstitutionStatus, Role, User
 from learning.models import (
-    Assessment, Attempt, Certificate, Course, CourseStatus, Enrollment,
+    Assessment, Attempt, Certificate, Course, CourseStatus, Enrollment, Feedback,
     Question, Resource, ResourceCompletion, ResourceType, Subject,
 )
 from learning.services import (
@@ -434,3 +434,51 @@ class MessageStylingTests(Fixture):
         )
         self.assertContains(response, "alert-danger")
         self.assertNotContains(response, "alert-error")
+
+
+# ===========================================================================
+# PAGE SPEED
+#
+# The course catalogue once asked the database a separate question for every
+# course card -- 37 queries for 12 courses, which on the hosted database took
+# eleven seconds. These pin it down: adding courses must not add queries.
+# ===========================================================================
+
+from django.db import connection  # noqa: E402
+from django.test.utils import CaptureQueriesContext  # noqa: E402
+
+
+class CataloguePageSpeedTests(Fixture):
+
+    def queries_for(self, path):
+        with CaptureQueriesContext(connection) as captured:
+            self.assertEqual(self.client.get(path).status_code, 200)
+        return len(captured.captured_queries)
+
+    def add_courses(self, how_many):
+        for n in range(how_many):
+            course = Course.objects.create(
+                institution=self.inst_a, subject=self.subject, trainer=self.trainer_a,
+                code=f"EXTRA-{n}", title=f"Extra {n}", status=CourseStatus.PUBLISHED)
+            Enrollment.objects.create(course=course, learner=self.learner)
+            Feedback.objects.create(course=course, learner=self.learner,
+                                    content_rating=4, trainer_rating=4, overall_rating=4)
+
+    def test_catalogue_queries_do_not_grow_with_the_number_of_courses(self):
+        before = self.queries_for(reverse("course_catalog"))
+        self.add_courses(8)
+        self.assertEqual(self.queries_for(reverse("course_catalog")), before)
+
+    def test_home_page_queries_do_not_grow_with_the_number_of_courses(self):
+        before = self.queries_for(reverse("home"))
+        self.add_courses(8)
+        self.assertEqual(self.queries_for(reverse("home")), before)
+
+    def test_card_figures_are_still_correct(self):
+        """Faster must not mean wrong: the counted figures match the direct ones."""
+        self.add_courses(3)
+        from learning.views import public_courses
+        for fast in public_courses():
+            slow = Course.objects.get(pk=fast.pk)
+            self.assertEqual(fast.enrolled_count, slow.enrolled_count)
+            self.assertEqual(fast.average_rating, slow.average_rating)
