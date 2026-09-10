@@ -105,9 +105,16 @@ urlpatterns = [
 # does this job. SkillScope runs straight from a laptop, including in demo
 # mode where DEBUG is deliberately off, so the URLs are wired to the serve
 # view directly instead -- otherwise the whole site loads with no styling.
-urlpatterns += [
-    re_path(r"^static/(?P<path>.*)$", serve,
-            {"document_root": settings.BASE_DIR / "static"}),
-    re_path(r"^media/(?P<path>.*)$", serve,
-            {"document_root": settings.MEDIA_ROOT}),
-]
+#
+# In production neither is needed: WhiteNoise serves static files, and uploads live
+# on Cloudinary with their own addresses. So this applies to laptops only.
+if not settings.PRODUCTION:
+    urlpatterns += [
+        re_path(r"^static/(?P<path>.*)$", serve,
+                {"document_root": settings.BASE_DIR / "static"}),
+    ]
+if not settings.USE_CLOUDINARY:
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", serve,
+                {"document_root": settings.MEDIA_ROOT}),
+    ]

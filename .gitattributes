@@ -1,0 +1,10 @@
+# Files that run on Render's Linux servers must keep Linux line endings.
+# Windows Git would otherwise convert them to CRLF, and a shell script with
+# CRLF endings fails on Linux with "bash\r: No such file or directory".
+*.sh      text eol=lf
+*.yaml    text eol=lf
+*.py      text eol=lf
+
+# Windows batch files need Windows line endings to run correctly.
+*.bat     text eol=crlf
+Dockerfile text eol=lf

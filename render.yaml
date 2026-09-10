@@ -1,0 +1,30 @@
+# ===================================================================
+#  Render blueprint for SkillScope  (Docker)
+#
+#  In Render:  New -> Blueprint -> choose this repository.
+#
+#  No secrets live in this file -- it is public on GitHub. The three
+#  values below are entered in Render, either one by one when prompted,
+#  or all at once with "Add from .env" using your local render.env file.
+#
+#  The database is MySQL on Aiven, not a Render database.
+# ===================================================================
+
+services:
+  - type: web
+    name: skillscope
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      # Aiven -> your MySQL service -> Overview -> "Service URI"
+      - key: DATABASE_URL
+        sync: false
+
+      # A long random key for signing sessions, generated once by Render.
+      - key: SKILLSCOPE_SECRET_KEY
+        generateValue: true
+
+      # Cloudinary dashboard -> "API environment variable"
+      - key: CLOUDINARY_URL
+        sync: false

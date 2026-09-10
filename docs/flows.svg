@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" width="700" height="700" font-family="Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-label="SkillScope: the platform flow and the AI course recommendation flow">
+<title>SkillScope - platform flow and AI course recommendation flow</title>
+
+<rect width="700" height="700" fill="#ffffff"/>
+
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<text x="50" y="34" font-size="17" font-weight="700" fill="#111827">SkillScope</text>
+<text x="146" y="34" font-size="13" fill="#6b7280">Smart India Hackathon &#183; PS 26075 &#183; Capacity building and learning portal</text>
+
+<rect x="50" y="52" width="290" height="34" rx="5" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.8"/>
+<text x="195" y="74" font-size="14" font-weight="600" fill="#3C3489" text-anchor="middle">Flow 1 &#8212; the platform</text>
+
+<rect x="370" y="52" width="290" height="34" rx="5" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.8"/>
+<text x="515" y="74" font-size="14" font-weight="600" fill="#085041" text-anchor="middle">Flow 2 &#8212; AI course recommendation</text>
+
+<g fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.8">
+  <rect x="50" y="102" width="290" height="58" rx="5"/>
+  <rect x="50" y="176" width="290" height="58" rx="5"/>
+  <rect x="50" y="250" width="290" height="58" rx="5"/>
+  <rect x="50" y="324" width="290" height="58" rx="5"/>
+  <rect x="50" y="398" width="290" height="58" rx="5"/>
+  <rect x="50" y="472" width="290" height="58" rx="5"/>
+  <rect x="50" y="546" width="290" height="58" rx="5"/>
+</g>
+<g font-size="13.5" font-weight="600" fill="#3C3489">
+  <text x="68" y="127">1. College applies to join</text>
+  <text x="68" y="201">2. Platform admin verifies it</text>
+  <text x="68" y="275">3. Institute creates the course</text>
+  <text x="68" y="349">4. Trainer uploads material</text>
+  <text x="68" y="423">5. Learner enrols and studies</text>
+  <text x="68" y="497">6. Test marked on the server</text>
+  <text x="68" y="571">7. Certificate with a QR code</text>
+</g>
+<g font-size="11.5" fill="#534AB7">
+  <text x="68" y="145">signs up, describes the institution</text>
+  <text x="68" y="219">nothing is public until this happens</text>
+  <text x="68" y="293">and the trainer's account</text>
+  <text x="68" y="367">videos, slides, test questions</text>
+  <text x="68" y="441">progress tracked item by item</text>
+  <text x="68" y="515">answer key never sent to the browser</text>
+  <text x="68" y="589">anyone can check it, no login needed</text>
+</g>
+<g stroke="#6b7280" stroke-width="1.4" marker-end="url(#a)">
+  <line x1="195" y1="160" x2="195" y2="172"/>
+  <line x1="195" y1="234" x2="195" y2="246"/>
+  <line x1="195" y1="308" x2="195" y2="320"/>
+  <line x1="195" y1="382" x2="195" y2="394"/>
+  <line x1="195" y1="456" x2="195" y2="468"/>
+  <line x1="195" y1="530" x2="195" y2="542"/>
+</g>
+
+<g fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.8">
+  <rect x="370" y="102" width="290" height="58" rx="5"/>
+  <rect x="370" y="176" width="290" height="58" rx="5"/>
+  <rect x="370" y="250" width="290" height="58" rx="5"/>
+  <rect x="370" y="324" width="290" height="58" rx="5"/>
+  <rect x="370" y="398" width="290" height="58" rx="5"/>
+  <rect x="370" y="472" width="290" height="58" rx="5"/>
+  <rect x="370" y="620" width="290" height="58" rx="5"/>
+</g>
+<rect x="370" y="546" width="290" height="58" rx="5" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.6"/>
+
+<g font-size="13.5" font-weight="600" fill="#085041">
+  <text x="388" y="127">1. Learner states their goal</text>
+  <text x="388" y="201">2. Uploads their marksheet</text>
+  <text x="388" y="275">3. Gemini reads the image</text>
+  <text x="388" y="349">4. Learner checks and corrects</text>
+  <text x="388" y="423">5. Answers five questions</text>
+  <text x="388" y="497">6. Our real catalogue goes in</text>
+  <text x="388" y="645">8. A ranked plan they can use</text>
+</g>
+<g font-size="11.5" fill="#0F6E56">
+  <text x="388" y="145">in their own words</text>
+  <text x="388" y="219">a photo of the real document</text>
+  <text x="388" y="293">pulls out subjects and marks</text>
+  <text x="388" y="367">nothing sent until they confirm</text>
+  <text x="388" y="441">written for the goal they chose</text>
+  <text x="388" y="515">every real course, inside the request</text>
+  <text x="388" y="663">in order, each with a reason</text>
+</g>
+
+<text x="388" y="571" font-size="13.5" font-weight="700" fill="#633806">7. Every course ID checked</text>
+<text x="388" y="589" font-size="11.5" fill="#854F0B">invented ones are discarded</text>
+
+<g stroke="#6b7280" stroke-width="1.4" marker-end="url(#a)">
+  <line x1="515" y1="160" x2="515" y2="172"/>
+  <line x1="515" y1="234" x2="515" y2="246"/>
+  <line x1="515" y1="308" x2="515" y2="320"/>
+  <line x1="515" y1="382" x2="515" y2="394"/>
+  <line x1="515" y1="456" x2="515" y2="468"/>
+  <line x1="515" y1="530" x2="515" y2="542"/>
+  <line x1="515" y1="604" x2="515" y2="616"/>
+</g>
+
+<text x="370" y="692" font-size="11.5" fill="#854F0B">The amber step is what stops the AI recommending a course that does not exist.</text>
+</svg>

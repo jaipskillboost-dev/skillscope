@@ -1,0 +1,25 @@
+# Kept out of the image. Anything listed here never reaches Docker.
+
+# Your own machine's secrets. Leaving this out would bake your local MySQL
+# password into an image that gets uploaded.
+.env
+*.env
+!render.env.example
+
+# Machine-specific or regenerated
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+staticfiles/
+media/
+
+# Not needed to run the site
+.git/
+.gitignore
+.gitattributes
+*.bat
+docs/
+flow.pdf
+*.log
+db.sqlite3

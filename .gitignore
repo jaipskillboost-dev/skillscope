@@ -14,5 +14,7 @@ staticfiles/
 
 # Local overrides
 .env
+*.env
+!*.env.example
 db.sqlite3
 *.log

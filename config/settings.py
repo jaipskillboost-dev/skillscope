@@ -57,28 +57,81 @@ DATABASE_PASSWORD = os.environ.get("SKILLSCOPE_DB_PASSWORD", "")
 DATABASE_HOST = os.environ.get("SKILLSCOPE_DB_HOST", "127.0.0.1")
 DATABASE_PORT = os.environ.get("SKILLSCOPE_DB_PORT", "3306")
 
-# Used to sign session cookies. Fine for local development; replace it with a
-# long random value before putting this on a public server.
+# PRODUCTION switches on everything a live, public deployment needs: DEBUG off,
+# HTTPS-only cookies, compressed static files, uploads on Cloudinary, and
+# refusing to start when a required value is missing.
+#
+# The Dockerfile sets SKILLSCOPE_PRODUCTION=1, so it applies both while the
+# image is being built and while it runs. (Render's own RENDER=true is also
+# honoured, for deploying without Docker.) On a laptop neither is set, and
+# everything behaves exactly as before.
+PRODUCTION = (os.environ.get("SKILLSCOPE_PRODUCTION") == "1"
+              or os.environ.get("RENDER") == "true")
+
+# Used to sign session cookies. Fine for local development; on Render it is
+# generated for you (see render.yaml), and the app refuses to start without it.
 SECRET_KEY = os.environ.get(
     "SKILLSCOPE_SECRET_KEY",
     "django-insecure-local-development-only-replace-before-deploying",
 )
+if PRODUCTION and (SECRET_KEY.startswith("django-insecure")
+                   or "replace-with" in SECRET_KEY
+                   or len(SECRET_KEY) < 40):
+    # Also catches the placeholder from render.env.example being pasted in
+    # unchanged -- it is public, so anyone could forge a login with it.
+    raise RuntimeError(
+        "Set SKILLSCOPE_SECRET_KEY to a long random value (40+ characters).")
 
-# Shows a detailed error page when something breaks. Turn off in production.
 # DEBUG on  -> Django shows a detailed traceback when something breaks.
 #              Useful while building, alarming in front of an audience.
 # DEBUG off -> the calm SkillScope error page is shown instead.
 #
-# Set it with the environment variable rather than editing this line, so the
-# demo and development use the same file:
+# Off by default in production, on by default on a laptop. Override either way:
 #     set SKILLSCOPE_DEBUG=0     (Windows, before starting the server)
-DEBUG = os.environ.get("SKILLSCOPE_DEBUG", "1") != "0"
+DEBUG = os.environ.get("SKILLSCOPE_DEBUG", "0" if PRODUCTION else "1") != "0"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "0.0.0.0", "testserver"]
 
+# Render tells the app its own public address, e.g. skillscope.onrender.com.
+# Without adding it here every request would be rejected with a 400.
+RENDER_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOST:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+
+# Any extra domains, comma separated -- for instance a custom domain later.
+ALLOWED_HOSTS += [h.strip() for h in os.environ.get("SKILLSCOPE_HOSTS", "").split(",") if h.strip()]
+
 # Written into the QR code on every certificate, so a phone scanning it knows
-# which server to ask.
-SITE_BASE_URL = "http://localhost:8000"
+# which server to ask. On Render this MUST be the public address -- if it
+# stayed as localhost, every certificate would scan to nothing.
+SITE_BASE_URL = os.environ.get(
+    "SKILLSCOPE_SITE_URL",
+    f"https://{RENDER_HOST}" if RENDER_HOST else "http://localhost:8000",
+).rstrip("/")
+if PRODUCTION and "localhost" in SITE_BASE_URL:
+    # Refuse to start rather than print certificates whose QR codes lead
+    # nowhere. Set SKILLSCOPE_SITE_URL to the site's public https:// address.
+    raise RuntimeError(
+        "SKILLSCOPE_SITE_URL is still localhost. Set it to the public address, "
+        "e.g. https://skillscope.onrender.com")
+
+# The site's own address is always an allowed host, whichever way it was given.
+_site_host = SITE_BASE_URL.split("://", 1)[-1].split("/", 1)[0]
+if _site_host and _site_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_site_host)
+
+# Django refuses a form posted from an origin it has not been told to trust.
+# Render serves over HTTPS, so without this, signing in would fail.
+CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS
+                        if h not in ("localhost", "127.0.0.1", "[::1]", "0.0.0.0", "testserver")]
+
+if PRODUCTION:
+    # Render terminates HTTPS in front of the app and forwards plain HTTP.
+    # This header is how Django learns the original request was secure.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # ---------------------------------------------------------------------------
@@ -100,6 +153,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves our CSS, JavaScript and fonts efficiently in production. Must sit
+    # directly after SecurityMiddleware.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -134,17 +190,56 @@ WSGI_APPLICATION = "config.wsgi.application"
 # DATABASE
 # ---------------------------------------------------------------------------
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": DATABASE_NAME,
-        "USER": DATABASE_USER,
-        "PASSWORD": DATABASE_PASSWORD,
-        "HOST": DATABASE_HOST,
-        "PORT": DATABASE_PORT,
-        "OPTIONS": {"charset": "utf8mb4"},
+# On a laptop: MySQL, using the SKILLSCOPE_DB_* values above.
+# On Render:   PostgreSQL. Render hands the app one DATABASE_URL containing
+#              the host, name, user and password, and that takes priority.
+#
+# Nothing in SkillScope uses MySQL-only or Postgres-only SQL -- every query goes
+# through Django -- so the same code runs unchanged on either.
+if os.environ.get("DATABASE_URL"):
+    import ssl
+
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,          # reuse connections between requests
+            conn_health_checks=True,   # but drop one that has gone stale
+        )
     }
-}
+
+    # A hosted MySQL such as Aiven hands out a URL ending "?ssl-mode=REQUIRED".
+    # That is a flag for MySQL's own command-line tools; PyMySQL, which we use,
+    # rejects it outright ("unexpected keyword argument 'ssl-mode'") and the
+    # site could never connect. So translate it into PyMySQL's own settings.
+    _db = DATABASES["default"]
+    if _db["ENGINE"] == "django.db.backends.mysql":
+        _options = _db.setdefault("OPTIONS", {})
+        _ssl_mode = str(_options.pop("ssl-mode", _options.pop("ssl_mode", ""))).upper()
+        _options["charset"] = "utf8mb4"
+
+        # Aiven signs its servers with its own certificate authority. With that
+        # certificate present, the connection is encrypted AND the server's
+        # identity is checked. It is a public certificate, not a secret.
+        _ca = BASE_DIR / "config" / "db-ca.pem"
+        if _ca.exists():
+            _options["ssl"] = {"ca": str(_ca)}
+        elif _ssl_mode in ("REQUIRED", "VERIFY_CA", "VERIFY_IDENTITY"):
+            # No certificate supplied: still encrypted, but the server's
+            # identity is not verified. Add config/db-ca.pem to close that gap.
+            _options["ssl"] = {"check_hostname": False, "verify_mode": ssl.CERT_NONE}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": DATABASE_NAME,
+            "USER": DATABASE_USER,
+            "PASSWORD": DATABASE_PASSWORD,
+            "HOST": DATABASE_HOST,
+            "PORT": DATABASE_PORT,
+            "OPTIONS": {"charset": "utf8mb4"},
+        }
+    }
 
 # Tests run against an in-memory SQLite database instead of MySQL.
 #
@@ -214,6 +309,44 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Where static files and uploads are kept.
+#
+# Static (our CSS/JS/fonts): WhiteNoise compresses them and gives each a
+# fingerprinted name, so browsers can cache them safely forever.
+#
+# Uploads: on disk in media/ by default. When CLOUDINARY_URL is set -- which it
+# must be on Render, whose disk is wiped on every deploy -- they go to
+# Cloudinary instead. See config/storage.py for why.
+USE_CLOUDINARY = bool(os.environ.get("CLOUDINARY_URL"))
+
+STORAGES = {
+    "default": {
+        "BACKEND": ("config.storage.CloudinaryStorage" if USE_CLOUDINARY
+                    else "django.core.files.storage.FileSystemStorage"),
+    },
+    "staticfiles": {
+        # Fingerprinted names need `collectstatic` to have run first, which
+        # the Docker build does. Keyed to PRODUCTION rather than DEBUG on
+        # purpose: demo mode on a laptop turns DEBUG off but never runs
+        # collectstatic, and would otherwise fail on every page.
+        "BACKEND": ("whitenoise.storage.CompressedManifestStaticFilesStorage"
+                    if PRODUCTION
+                    else "django.contrib.staticfiles.storage.StaticFilesStorage"),
+    },
+}
+
+if PRODUCTION and USE_CLOUDINARY and "API_KEY" in os.environ["CLOUDINARY_URL"]:
+    # The placeholder from render.env.example, pasted in unchanged.
+    raise RuntimeError(
+        "CLOUDINARY_URL still contains the example placeholder. Paste the real "
+        "value from your Cloudinary dashboard.")
+
+if PRODUCTION and not USE_CLOUDINARY:
+    # Refuse to start rather than quietly lose every upload on the next deploy.
+    raise RuntimeError(
+        "Set CLOUDINARY_URL before deploying. Without it, uploaded files are stored on "
+        "a disk that Render wipes on every deploy.")
 
 # Recorded lectures are large. Anything above this is streamed to a temporary
 # file instead of being held in memory.
