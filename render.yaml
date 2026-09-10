@@ -14,6 +14,8 @@ services:
   - type: web
     name: skillscope
     runtime: docker
+    # Without this line Render assumes its paid Starter plan and asks for a card.
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
